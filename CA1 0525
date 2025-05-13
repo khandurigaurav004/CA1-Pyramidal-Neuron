@@ -1,0 +1,212 @@
+from neuron import h, gui
+import matplotlib.pyplot as plt
+import numpy as np
+h.load_file("stdrun.hoc")
+# load ion channel mechanism here 
+
+soma = h.Section(name='soma')
+
+#apical trunk
+radTprox = h.Section(name='radTprox')
+radTmed = h.Section(name='radTmed')
+radTdist = h.Section(name='radTdist')
+
+# slm1
+lm_thick1 = h.Section(name='lm_thick1')
+lm_medium1 = h.Section(name='lm_medium1')
+lm_thin1a = h.Section(name='lm_thin1a')
+lm_thin1b = h.Section(name='lm_thin1b')
+
+# slm2
+lm_thick2 = h.Section(name='lm_thick2')
+lm_medium2 = h.Section(name='lm_medium2')
+lm_thin2a = h.Section(name='lm_thin2a')
+lm_thin2b = h.Section(name='lm_thin2b')
+
+# rad1
+rad_thick1 = h.Section(name='rad_thick1')
+rad_medium1 = h.Section(name='rad_medium1')
+rad_thin1a = h.Section(name='lm_thin1a')
+rad_thin1b = h.Section(name='lm_thin1b')
+
+# rad2
+rad_thick2 = h.Section(name='rad_thick2')
+rad_medium2 = h.Section(name='rad_medium2')
+rad_thin2a = h.Section(name='rad_thin2a')
+rad_thin2b = h.Section(name='rad_thin2b')
+
+# basal dends
+oriprox1 = h.Section(name='oriprox1')
+oridist1a = h.Section(name='oridist1a')
+oridist1b = h.Section(name='oridist1b')
+oriprox2 = h.Section(name='oriprox2')
+oridist2a = h.Section(name='oridist2a')
+oridist2b = h.Section(name='oridist2b')
+
+axon = h.Section(name='axon') #axon
+
+# topology
+radTprox.connect(soma(1))
+radTmed.connect(radTprox(1))
+radTdist.connect(radTmed(1))
+lm_thick2.connect(radTdist(1))
+lm_medium2.connect(lm_thick2(1))
+lm_thin2a.connect(lm_medium2(1))
+lm_thin2b.connect(lm_medium2(1))
+lm_thick1.connect(radTdist(1))
+lm_medium1.connect(lm_thick1(1))
+lm_thin1a.connect(lm_medium1(1))
+lm_thin1b.connect(lm_medium1(1))
+rad_thick2.connect(radTmed(1))
+rad_medium2.connect(rad_thick2(1))
+rad_thin2a.connect(rad_medium2(1))
+rad_thin2b.connect(rad_medium2(1))
+rad_thick1.connect(radTprox(1))
+rad_medium1.connect(rad_thick1(1))
+rad_thin1a.connect(rad_medium1(1))
+rad_thin1b.connect(rad_medium1(1))
+oriprox1.connect(soma(0))
+oridist1a.connect(oriprox1(1))
+oridist1b.connect(oriprox1(1))
+oriprox2.connect(soma(0))
+oridist2a.connect(oriprox2(1))
+oridist2b.connect(oriprox2(1))
+axon.connect(soma(0))
+
+# subsets
+allsection_list = [soma, radTprox, radTmed, radTdist, lm_thick1, lm_medium1, lm_thin1a, lm_thin1b, lm_thick2, lm_medium2, lm_thin2a, lm_thin2b, rad_thick1, rad_medium1, rad_thin1a, rad_thin1b, rad_thick2, rad_medium2, rad_thin2a, rad_thin2b, oriprox1, oridist1a, oridist1b, oriprox2, oridist2a, oridist2b, axon]
+axonal_list = [axon]
+somatic_list= [soma]
+apical_list = [radTprox, radTmed, radTdist, lm_thick1, lm_medium1, lm_thin1a, lm_thin1b, lm_thick2, lm_medium2, lm_thin2a, lm_thin2b, rad_thick1, rad_medium1, rad_thin1a, rad_thin1b, rad_thick2, rad_medium2, rad_thin2a, rad_thin2b]
+basal_list = [oriprox1, oridist1a, oridist1b, oriprox2, oridist2a, oridist2b]
+trunk_list = [radTprox, radTmed, radTdist]
+oblique_list = [rad_thick1, rad_medium1, rad_thin1a, rad_thin1b, rad_thick2, rad_medium2, rad_thin2a, rad_thin2b]
+
+# passive and active mechs
+for sec in allsection_list:
+    sec.insert("leak")
+    sec.insert("kdr")
+    sec.insert("nax")
+
+for sec in somatic_list:
+    sec.insert("kmb")
+    sec.insert("kap")
+    sec.insert("hd")
+    sec.insert("can")
+    sec.insert("cal")
+    sec.insert("cat")
+    sec.insert("kca")
+    sec.insert("cagk")
+    sec.insert("cacum")
+
+for sec in apical_list:
+    sec.insert("kad")
+    sec.insert("hd")
+    sec.insert("can")
+    sec.insert("cal")
+    sec.insert("cat")
+    sec.insert("kca")
+    sec.insert("cagk")
+    sec.insert("cacum")
+
+for sec in basal_list:
+    sec.insert("kap")
+    sec.insert("hd")
+    sec.insert("can")
+    sec.insert("cal")
+    sec.insert("cat")
+    sec.insert("kca")
+    sec.insert("cagk")
+    sec.insert("cacum")
+
+for sec in axonal_list:
+    sec.insert("kmb")
+    sec.insert("kap")
+
+#biophysics
+
+h.celsius = 35
+
+for sec in allsection_list:
+    sec.Ra = 150
+    sec.cm = 1.0
+    sec.g_leak = 0.0000357 #from migliore place cell
+    sec.e_leak = -65 # fro RMP
+    sec.ena = 50
+    sec.ek = -90
+    
+for sec in somatic_list:
+    sec.gkabar_kap = 0.0075
+    sec.gbar_kmb = 0.001
+    sec.gkdrbar_kdr = 0.0015
+    sec.gbar_nax = 0.035
+    sec.gcalbar_cal =  0.0005
+    sec.gcanbar_can = 0.00000226
+    sec.gcatbar_cat =  0.00005
+    sec.gbar_kca = 0.0015
+    sec.gbar_cagk = 0.000045
+
+for sec in axonal_list:
+    sec.gbar_nax = 0.0035
+    sec.gkabar_kap = 0.16369
+    sec.gbar_kmb = 0.02647
+    sec.gkdrbar_kdr = 0.01166
+    
+for sec in apical_list:
+    sec.gkdrbar_kdr = 0.0043036
+    sec.gbar_nax = 0.03828
+    sec.gcalbar_cal =  0.000008032
+    sec.gcanbar_can = 0.00000226
+    sec.gcatbar_cat =  0.00000118
+    sec.gbar_kca = 0.00009031
+    sec.gbar_cagk = 0.00004482
+
+for sec in trunk_list:
+    sec.gkdrbar_kdr = 0.0043036
+    sec.gbar_nax = 0.03828
+    sec.gcalbar_cal =  0.000008032
+    sec.gcanbar_can = 0.00000226
+    sec.gcatbar_cat =  0.00000118
+    sec.gbar_kca = 0.00009031
+    sec.gbar_cagk = 0.00004482
+
+for sec in basal_list:
+    sec.gkdrbar_kdr = 0.0043036
+    sec.gbar_nax = 0.03828
+    sec.gcalbar_cal =  0.000008032
+    sec.gcanbar_can = 0.00000226
+    sec.gcatbar_cat =  0.00000118
+    sec.gbar_kca = 0.00009031
+    sec.gbar_cagk = 0.00004482
+
+# segmentaiton based on d_lamda rule 
+soma.nseg = 1
+radTprox.nseg = 13
+radTmed.nseg = 15
+radTdist.nseg = 19
+lm_thick2.nseg = 13
+lm_medium2.nseg = 13
+lm_thin2a.nseg = 13
+lm_thin2b.nseg = 13
+lm_thick1.nseg = 19
+lm_medium1.nseg = 21
+lm_thin1a.nseg = 13
+lm_thin1b.nseg = 13
+rad_thick2.nseg = 19
+rad_medium2.nseg = 21
+rad_thin2a.nseg = 13
+rad_thin2b.nseg = 13
+rad_thick1.nseg = 19
+rad_medium1.nseg = 21
+rad_thin1a.nseg = 13
+rad_thin1b.nseg = 13
+oriprox1.nseg = 19
+oridist1a.nseg = 21                                                                                                                                                                
+oridist1b.nseg = 21
+oriprox2.nseg = 19
+oridist2a.nseg = 21
+oridist2b.nseg = 21
+axon.nseg = 3
+
+------Biophysical model of CA1 Pyramidal Neuron------
+(Turi et. al., 2019) and (Mazzara and Migliore et. al., 2021) 
