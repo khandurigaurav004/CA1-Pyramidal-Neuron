@@ -1,0 +1,42 @@
+# Simulation parameters
+duration = 15000  # ms
+dt = 0.1
+h.dt = dt
+noise_std = 0.61  # nA
+
+# Gaussian noise current
+t = np.arange(0, duration, dt)
+noise = np.random.normal(loc=0, scale=noise_std, size=len(t))
+noise_vec = h.Vector(noise)
+
+iclamp = h.IClamp(soma(0.5))
+iclamp.delay = 0
+iclamp.dur = 10000
+noise_vec.play(iclamp._ref_amp, dt)
+
+
+v_vec = h.Vector().record(soma(0.5)._ref_v)
+t_vec = h.Vector().record(h._ref_t)
+spike_times = h.Vector()
+apc = h.APCount(soma(0.5))
+apc.thresh = 0
+apc.record(spike_times)
+
+
+h.v_init = -68.59
+h.tstop = duration
+h.run()
+
+
+plt.figure(figsize=(12, 4))
+plt.plot(t_vec, v_vec)
+plt.ylabel('Voltage (mV)')
+plt.xlabel('Time (ms)')
+plt.title(f'Baseline Firing with {noise_std} nA Gaussian Noise')
+plt.grid(True, alpha=0.3)
+plt.show()
+
+# firing stats
+firing_rate = len(spike_times) / (duration/1000)
+print(f"Firing rate: {firing_rate:.1f} Hz")
+print(f"Total spikes: {len(spike_times)}")
